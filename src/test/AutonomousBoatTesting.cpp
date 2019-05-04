@@ -24,9 +24,15 @@
 
 
 TEST_CASE("Factorials are computed", "[factorial]" ) {
-	TestGPS * testGPS = new TestGPS;
+	const char * nmeaSentence = "$GPRMC,144326.00,A,5107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20";
+	TestGPS * testGPS = new TestGPS(nmeaSentence);
 	GPSParser gpsParser(testGPS);
-	const char * s2 = "Hello World";
-    REQUIRE(strcmp(gpsParser.waitAndGetNextNmeaSentence(), s2) ==  0);
+
+	float expectedLatitude = 5107.0017737f;
+
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = gpsParser.waitAndGetNextNmeaSentence();
+	float actualLatitude = actualGPSCoordinates.latitude;
+    REQUIRE(actualLatitude ==  expectedLatitude);
 
 }
