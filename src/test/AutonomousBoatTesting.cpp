@@ -48,3 +48,39 @@ TEST_CASE("Ignore messages with missing latitude", "[GPSParser]" ) {
 }
 
 
+TEST_CASE("Only parse messages for longitude with messages that begin with $GPRMC", "[GPSParser]" ) {
+	typedef char NmeaMessageArray[2][150];
+	NmeaMessageArray badAndThenGoodInput;
+	strcpy(badAndThenGoodInput[0], "$GPGLL,3907.360,N,12102.481,W,183730,A*33");
+	strcpy(badAndThenGoodInput[1], "$GPRMC,144326.00,A,5107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20");
+	TestGPS * testGPS = new TestGPS(badAndThenGoodInput, 2);
+	GPSParser gpsParser(testGPS);
+
+	float expectedLatitude = 5107.0017737f;
+
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = gpsParser.waitAndGetNextPosition();
+	float actualLatitude = actualGPSCoordinates.latitude;
+
+    REQUIRE(actualLatitude ==  expectedLatitude);
+}
+
+TEST_CASE("handle incomplete $GPRMC message", "[GPSParser]" ) {
+	typedef char NmeaMessageArray[2][150];
+	NmeaMessageArray incompleteMessage;
+	strcpy(incompleteMessage[0], "$GPRMC,144326.00,A,4007.0017737,N,11402.3291611,W,0.080,323.3");
+	strcpy(incompleteMessage[1], "$GPRMC,144326.00,A,4107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20");
+	TestGPS * testGPS = new TestGPS(incompleteMessage, 2);
+	GPSParser gpsParser(testGPS);
+
+	float expectedLatitude = 4107.0017737f;
+
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = gpsParser.waitAndGetNextPosition();
+	float actualLatitude = actualGPSCoordinates.latitude;
+
+    REQUIRE(actualLatitude ==  expectedLatitude);
+}
+
+
+
