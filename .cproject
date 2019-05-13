@@ -103,7 +103,7 @@
                         					
                     </folderInfo>
                     					
-                    <fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1742683588.505391169" name="AutonomousBoatTesting.cpp" rcbsApplicability="disable" resourcePath="src/test/AutonomousBoatTesting.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.base.1265957066">
+                    <fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1742683588.505391169" name="AutonomousBoatTesting.cpp" rcbsApplicability="disable" resourcePath="src/test/GPSParsingTests.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.base.1265957066">
                         						
                         <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1265957066" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
                             							
