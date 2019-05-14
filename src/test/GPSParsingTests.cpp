@@ -21,9 +21,9 @@
 //check for valid chars as well as valid #s...e.g. number range as well
 //TODO: feed the gps lots of crap data and try to get it to segfault
 
-const int NumNMEASentencesAllowed = 2;
+const int MaxNumNMEASentencesAllowed = 10;
 const int maxLengthOfSetence = 150;
-typedef char NmeaMessageArray[NumNMEASentencesAllowed][maxLengthOfSetence];
+typedef char NmeaMessageArray[MaxNumNMEASentencesAllowed][maxLengthOfSetence];
 struct GPSCoordinates actualGPSCoordinates;
 
 GPSParser createGPSParser(const char * args[], const int numArgs) {
@@ -139,6 +139,30 @@ TEST_CASE("Missing North or South on first message" ) {
 	actualGPSCoordinates = createGPSParser(nmeaMessages, 2).waitAndGetNextPosition();
 
     REQUIRE('S' == actualGPSCoordinates.northOrSouth);
+}
+
+//multimessage tests
+
+TEST_CASE("missing latitude and then missing longitude and then valid message") {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A"  ",,"  "N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20",
+			                       "$GPRMC,144326.00,A,5107.0017737,N"  ",,"  "W,0.080,323.3,210307,0.0,E,A*20",
+			                       "$GPRMC,144326.00,A,80.0017737,S,90.3291611,E,0.080,323.3,210307,0.0,E,A*20" };
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = createGPSParser(nmeaMessages, 3).waitAndGetNextPosition();
+    REQUIRE('S' == actualGPSCoordinates.northOrSouth);
+    REQUIRE(80.0017737f == actualGPSCoordinates.latitude);
+	REQUIRE(90.3291611f == actualGPSCoordinates.longitude);
+}
+
+TEST_CASE("missing latitude and then missing longitude with wrong number of commas and then valid message") {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A"  ",,"  "N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20",
+			                       "$GPRMC,144326.00,A,5107.0017737,N"  ","  "W,0.080,323.3,210307,0.0,E,A*20", //missing comma compared to above test
+			                       "$GPRMC,144326.00,A,80.0017737,S,90.3291611,E,0.080,323.3,210307,0.0,E,A*20" };
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = createGPSParser(nmeaMessages, 3).waitAndGetNextPosition();
+    REQUIRE('S' == actualGPSCoordinates.northOrSouth);
+    REQUIRE(80.0017737f == actualGPSCoordinates.latitude);
+	REQUIRE(90.3291611f == actualGPSCoordinates.longitude);
 }
 
 
