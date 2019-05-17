@@ -5,14 +5,18 @@
 // Copyright   : Your copyright notice
 // Description : Testing my boat's gps parsing
 //============================================================================
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#ifndef GPSPARSINGTESTS_CPP
+#define GPSPARSINGTESTS_CPP
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "catch.hpp"
-#include <test/TestGPS.cpp>
-#include <GPSParser.cpp>
+#include <AutoPilot.cpp>
+#include <test/TestCompass.cpp>
+#include <test/TestRudder.cpp>
+#include <OverrideableCompass.cpp>
+#include <OverrideableRudder.cpp>
+#include "MyCatchFile.h"
 
 //To Reader: If we are testing a bad message, we usually have in our test an input of a bad message, followed by a good message, and we assert
 //on the good message.
@@ -20,18 +24,6 @@
 
 //check for valid chars as well as valid #s...e.g. number range as well
 //TODO: feed the gps lots of crap data and try to get it to segfault
-
-const int MaxNumNMEASentencesAllowed = 10;
-const int maxLengthOfSetence = 150;
-typedef char NmeaMessageArray[MaxNumNMEASentencesAllowed][maxLengthOfSetence];
-struct GPSCoordinates actualGPSCoordinates;
-
-GPSParser createGPSParser(const char * args[], const int numArgs) {
-	NmeaMessageArray messages;
-	for (int i = 0; i < numArgs; ++i) { strcpy(messages[i], args[i]); }
-	TestGPS * testGPS = new TestGPS(messages, numArgs);
-	return GPSParser(testGPS);
-}
 
 //Latitude
 TEST_CASE("Get latitude", "[GPSParser]" ) {
@@ -230,3 +222,25 @@ TEST_CASE("Weird message", "[GPSParser]" ) {
 //	float actualLongitude = actualGPSCoordinates.longitude;
 //	REQUIRE(actualLongitude ==  expectedLongitude);
 //}
+
+
+
+
+
+TEST_CASE("Rudder should not move since we are heading in current direction", "[Autopilot]" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,W,0.080,323.3,210307,0.0,E,A*20"};
+	float heading[] = {90.0f};
+	TestCompass * compass = new TestCompass(heading, 1);
+	TestRudder * rudder = new TestRudder;
+	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
+	AutoPilot pilot(&gpsParserIn, compass, rudder);
+	pilot.driveToWaypoint(0.0000000f, 'N', 1.000f, 'E');
+	//int straightAheadInDegreesForRudder = 90;
+	int * expected = rudder->recordedPositions;
+	REQUIRE(expected[0] == 90);
+}
+
+
+
+
+#endif
