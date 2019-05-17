@@ -141,6 +141,32 @@ TEST_CASE("Missing North or South on first message" ) {
     REQUIRE('S' == actualGPSCoordinates.northOrSouth);
 }
 
+TEST_CASE("get west direction" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,5107.0017737,S,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20"};
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = createGPSParser(nmeaMessages, 1).waitAndGetNextPosition();
+
+    REQUIRE('W' == actualGPSCoordinates.westOrEast);
+}
+
+TEST_CASE("get east direction" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,5107.0017737,S,11402.3291611,E,0.080,323.3,210307,0.0,E,A*20"};
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = createGPSParser(nmeaMessages, 1).waitAndGetNextPosition();
+
+    REQUIRE('E' == actualGPSCoordinates.westOrEast);
+}
+
+TEST_CASE("Missing West or East on first message" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,5107.0017737,S,11402.3291611,,0.080,323.3,210307,0.0,E,A*20",
+								   "$GPRMC,144326.00,A,5107.0017737,S,11402.3291611,E,0.080,323.3,210307,0.0,E,A*20"};
+	struct GPSCoordinates actualGPSCoordinates;
+	actualGPSCoordinates = createGPSParser(nmeaMessages, 2).waitAndGetNextPosition();
+
+    REQUIRE('E' == actualGPSCoordinates.westOrEast);
+}
+
+
 //multimessage tests
 
 TEST_CASE("missing latitude and then missing longitude and then valid message") {
@@ -163,6 +189,11 @@ TEST_CASE("missing latitude and then missing longitude with wrong number of comm
     REQUIRE('S' == actualGPSCoordinates.northOrSouth);
     REQUIRE(80.0017737f == actualGPSCoordinates.latitude);
 	REQUIRE(90.3291611f == actualGPSCoordinates.longitude);
+}
+
+TEST_CASE("reading multiple valid messages in a row and make sure they are all good") {
+
+
 }
 
 
