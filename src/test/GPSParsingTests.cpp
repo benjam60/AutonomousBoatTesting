@@ -197,6 +197,14 @@ TEST_CASE("reading multiple valid messages in a row and make sure they are all g
 }
 
 
+//Unusual and bad input
+TEST_CASE("Weird message", "[GPSParser]" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,5107.0017737,N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20"};
+	actualGPSCoordinates = createGPSParser(nmeaMessages, 1).waitAndGetNextPosition();
+
+    REQUIRE(5107.0017737f == actualGPSCoordinates.latitude);
+}
+
 //write a test with 3 messages, one is missing latitude, next is missing longitude, and the third one is valid
 
 //run tests with many nmea messages
