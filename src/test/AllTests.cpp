@@ -1,10 +1,3 @@
-//============================================================================
-// Name        : AutonomousBoatTesting.cpp
-// Author      : Ben
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Testing my boat's gps parsing
-//============================================================================
 #ifndef GPSPARSINGTESTS_CPP
 #define GPSPARSINGTESTS_CPP
 
@@ -21,9 +14,7 @@
 //To Reader: If we are testing a bad message, we usually have in our test an input of a bad message, followed by a good message, and we assert
 //on the good message.
 
-
 //check for valid chars as well as valid #s...e.g. number range as well
-//TODO: feed the gps lots of crap data and try to get it to segfault
 
 //Latitude
 TEST_CASE("Get latitude", "[GPSParser]" ) {
@@ -158,9 +149,6 @@ TEST_CASE("Missing West or East on first message" ) {
     REQUIRE('E' == actualGPSCoordinates.westOrEast);
 }
 
-
-//multimessage tests
-
 TEST_CASE("missing latitude and then missing longitude and then valid message") {
 	const char * nmeaMessages[] = {"$GPRMC,144326.00,A"  ",,"  "N,11402.3291611,W,0.080,323.3,210307,0.0,E,A*20",
 			                       "$GPRMC,144326.00,A,5107.0017737,N"  ",,"  "W,0.080,323.3,210307,0.0,E,A*20",
@@ -188,6 +176,7 @@ TEST_CASE("reading multiple valid messages in a row and make sure they are all g
 
 }
 
+//test no message status
 
 //Unusual and bad input
 TEST_CASE("Weird message", "[GPSParser]" ) {
@@ -224,20 +213,40 @@ TEST_CASE("Weird message", "[GPSParser]" ) {
 //}
 
 
-
-
-
 TEST_CASE("Rudder should not move since we are heading in current direction", "[Autopilot]" ) {
-	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,W,0.080,323.3,210307,0.0,E,A*20"};
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,E,0.080,323.3,210307,0.0,E,A*20"};
 	float heading[] = {90.0f};
-	TestCompass * compass = new TestCompass(heading, 1);
 	TestRudder * rudder = new TestRudder;
 	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
-	AutoPilot pilot(&gpsParserIn, compass, rudder);
+	AutoPilot pilot(&gpsParserIn, new TestCompass(heading, 1), rudder);
 	pilot.driveToWaypoint(0.0000000f, 'N', 1.000f, 'E');
-	//int straightAheadInDegreesForRudder = 90;
+	int straightAheadInDegreesForRudder = 90;
+	int expected = rudder->recordedPositions[0];
+	REQUIRE(expected == straightAheadInDegreesForRudder);
+}
+
+//moving in the wrong direction
+//TEST_CASE("Rudder should not move since we are heading in current direction", "[Autopilot]" ) {
+//	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,W,0.080,323.3,210307,0.0,E,A*20"};
+//	float heading[] = {90.0f};
+//	TestRudder * rudder = new TestRudder;
+//	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
+//	AutoPilot pilot(&gpsParserIn, new TestCompass(heading, 1), rudder);
+//	pilot.driveToWaypoint(0.0000000f, 'N', 1.000f, 'E');
+//	int straightAheadInDegreesForRudder = 90;
+//	int expected = rudder->recordedPositions[0];
+//	REQUIRE(expected == straightAheadInDegreesForRudder);
+//}
+
+TEST_CASE("Boat is facing 56 degrees more than waypoint so rudder should angle correct error by half", "[Autopilot]" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,W,0.080,323.3,210307,0.0,E,A*20"};
+	float heading[] = {90.0f};
+	TestRudder * rudder = new TestRudder;
+	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
+	AutoPilot pilot(&gpsParserIn, new TestCompass(heading, 1), rudder);
+	pilot.driveToWaypoint(0.0000000f, 'N', 1.000f, 'E');
 	int * expected = rudder->recordedPositions;
-	REQUIRE(expected[0] == 90);
+	REQUIRE(expected[0] == 118);
 }
 
 

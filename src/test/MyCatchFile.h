@@ -7,13 +7,10 @@
 #include "GPSParser.cpp"
 #include "test/TestGPS.cpp"
 
-
 const int MaxNumNMEASentencesAllowed = 10;
 const int maxLengthOfSetence = 150;
 typedef char NmeaMessageArray[MaxNumNMEASentencesAllowed][maxLengthOfSetence];
 struct GPSCoordinates actualGPSCoordinates;
-
-
 
 GPSParser createGPSParser(const char * args[], const int numArgs) {
 	NmeaMessageArray messages;
