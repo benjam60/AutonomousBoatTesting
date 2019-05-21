@@ -219,11 +219,26 @@ TEST_CASE("Rudder should not move since we are heading in current direction", "[
 	TestRudder * rudder = new TestRudder;
 	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
 	AutoPilot pilot(&gpsParserIn, new TestCompass(heading, 1), rudder);
-	pilot.driveToWaypoint(0.0000000f, 'N', 1.000f, 'E');
+	GPSCoordinates waypoint(0.0000000f, 1.000f, 'N', 'E');
+	pilot.driveToWaypoint(waypoint);
 	int straightAheadInDegreesForRudder = 90;
 	int expected = rudder->recordedPositions[0];
 	REQUIRE(expected == straightAheadInDegreesForRudder);
 }
+
+
+TEST_CASE("Boat is facing 45 degrees more than waypoint so rudder should angle correct error by half", "[Autopilot]" ) {
+	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,W,0.080,323.3,210307,0.0,E,A*20"};
+	float heading[] = {90.0f};
+	TestRudder * rudder = new TestRudder;
+	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
+	AutoPilot pilot(&gpsParserIn, new TestCompass(heading, 1), rudder);
+	GPSCoordinates waypoint(1.0f, 1.0f, 'N', 'E');
+	pilot.driveToWaypoint(waypoint);
+	int * expected = rudder->recordedPositions;
+	REQUIRE(expected[0] == (90 + 22));
+}
+
 
 //moving in the wrong direction
 //TEST_CASE("Rudder should not move since we are heading in current direction", "[Autopilot]" ) {
@@ -237,19 +252,6 @@ TEST_CASE("Rudder should not move since we are heading in current direction", "[
 //	int expected = rudder->recordedPositions[0];
 //	REQUIRE(expected == straightAheadInDegreesForRudder);
 //}
-
-TEST_CASE("Boat is facing 56 degrees more than waypoint so rudder should angle correct error by half", "[Autopilot]" ) {
-	const char * nmeaMessages[] = {"$GPRMC,144326.00,A,0.0000000,N,00.0000000,W,0.080,323.3,210307,0.0,E,A*20"};
-	float heading[] = {90.0f};
-	TestRudder * rudder = new TestRudder;
-	GPSParser gpsParserIn = createGPSParser(nmeaMessages, 1);
-	AutoPilot pilot(&gpsParserIn, new TestCompass(heading, 1), rudder);
-	pilot.driveToWaypoint(0.0000000f, 'N', 1.000f, 'E');
-	int * expected = rudder->recordedPositions;
-	REQUIRE(expected[0] == 118);
-}
-
-
 
 
 #endif
